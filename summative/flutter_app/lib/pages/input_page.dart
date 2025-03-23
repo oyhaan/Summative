@@ -1,6 +1,6 @@
 // lib/pages/input_page.dart
 import 'package:flutter/material.dart';
-import 'package:water_quality_predictor/pages/result_page.dart';
+import 'package:flutter_app/pages/result_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/prediction_response.dart';
