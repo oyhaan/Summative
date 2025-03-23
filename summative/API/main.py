@@ -1,71 +1,64 @@
+# main.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+import pandas as pd
 import pickle
-import pandas as pd  # Changed from numpy to pandas
-import uvicorn
 import gzip
 
-# Initialize FastAPI app
-app = FastAPI(title="Crop Yield Prediction API", description="API to predict crop yield based on environmental and regional inputs")
+app = FastAPI(title="Water Quality Dissolved Oxygen Prediction API")
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust for production
+    allow_origins=["*"],  # Allow all origins (adjust for production)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define input schema with Pydantic
-class YieldInput(BaseModel):
-    rainfall: float = Field(..., ge=0, le=5000, description="Average rainfall in mm per year (0-5000)")
-    pesticides: float = Field(..., ge=0, le=200000, description="Pesticides used in tonnes (0-200,000)")
-    temperature: float = Field(..., ge=-10, le=50, description="Average temperature in °C (-10 to 50)")
-    item: str = Field(..., description="Crop type (e.g., Maize, Potatoes)")
-    area: str = Field(..., description="Region or country (e.g., Albania, Zambia)")
-    year: int = Field(..., ge=1900, le=2025, description="Year of prediction (1900-2025)")
+# Define the input model with data types and range constraints
+class WaterQualityInput(BaseModel):
+    salinity: float = Field(..., ge=0, le=10, description="Salinity in ppt (0-10)")
+    water_temp: float = Field(..., ge=0, le=40, description="Water temperature in °C (0-40)")
+    secchi_depth: float = Field(..., ge=0, le=5, description="Secchi Depth in meters (0-5)")
+    air_temp: float = Field(..., ge=-20, le=50, description="Air temperature in °C (-20 to 50)")
 
-# Load model and encoders
-with gzip.open("best_model.pkl.gz", "rb") as f:
+# Load the model and scaler from compressed files using pickle and gzip
+with gzip.open("do_prediction_model.pkl.gz", "rb") as f:
     model = pickle.load(f)
-with open("label_encoder_item.pkl", "rb") as f:
-    le_item = pickle.load(f)
-with open("label_encoder_area.pkl", "rb") as f:
-    le_area = pickle.load(f)
 
-# Define feature names as used during training
-FEATURE_NAMES = ["average_rain_fall_mm_per_year", "pesticides_tonnes", "avg_temp", "Item", "Area", "Year"]
+with gzip.open("scaler_do.pkl.gz", "rb") as f:
+    scaler = pickle.load(f)
 
-# Prediction endpoint
 @app.post("/predict")
-async def predict(data: YieldInput):
-    try:
-        # Encode item and area
-        try:
-            item_encoded = le_item.transform([data.item])[0]
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Crop '{data.item}' not recognized.")
-        try:
-            area_encoded = le_area.transform([data.area])[0]
-        except ValueError:
-            raise HTTPException(status_code=400, detail=f"Area '{data.area}' not recognized.")
+async def predict_dissolved_oxygen(input_data: WaterQualityInput):
+    # Create a dataframe with the input data
+    input_df = pd.DataFrame({
+        "Salinity (ppt)": [input_data.salinity],
+        "Water Temp (?C)": [input_data.water_temp],
+        "Secchi Depth (m)": [input_data.secchi_depth],
+        "Air Temp-Celsius": [input_data.air_temp]
+    })
+    
+    # Scale the input data
+    input_scaled = scaler.transform(input_df)
+    
+    # Make prediction
+    prediction = model.predict(input_scaled)[0]
+    
+    # Interpret the prediction
+    safety_message = (
+        "Dissolved Oxygen level suggests the water is safe for aquatic life (>=5 mg/L)."
+        if prediction >= 5
+        else "Warning: Low Dissolved Oxygen (<5 mg/L) - Water may be unsafe for aquatic life."
+    )
+    
+    return {
+        "predicted_dissolved_oxygen": prediction,
+        "safety_message": safety_message
+    }
 
-        # Prepare input data as a DataFrame with feature names
-        input_data = pd.DataFrame(
-            [[data.rainfall, data.pesticides, data.temperature, item_encoded, area_encoded, data.year]],
-            columns=FEATURE_NAMES
-        )
-
-        # Make prediction
-        prediction = model.predict(input_data)[0]
-
-        # Return result
-        return {"predicted_yield": round(prediction, 2), "unit": "hg/ha"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
-
-# Run the app (for local testing)
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
