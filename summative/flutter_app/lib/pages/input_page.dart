@@ -62,7 +62,7 @@ class _InputPageState extends State<InputPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://your-service-name.onrender.com/predict'),
+        Uri.parse('https://summative-belf.onrender.com/predict'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'rainfall': double.parse(_rainfallController.text),
