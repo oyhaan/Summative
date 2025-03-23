@@ -1,18 +1,17 @@
 // lib/models/prediction_response.dart
 class PredictionResponse {
-  final double predictedDissolvedOxygen;
-  final String safetyMessage;
+  final double predictedYield;
+  final String unit;
 
   PredictionResponse({
-    required this.predictedDissolvedOxygen,
-    required this.safetyMessage,
+    required this.predictedYield,
+    required this.unit,
   });
 
   factory PredictionResponse.fromJson(Map<String, dynamic> json) {
     return PredictionResponse(
-      predictedDissolvedOxygen:
-          (json['predicted_dissolved_oxygen'] as num).toDouble(),
-      safetyMessage: json['safety_message'] as String,
+      predictedYield: (json['predicted_yield'] as num).toDouble(),
+      unit: json['unit'] as String,
     );
   }
 }

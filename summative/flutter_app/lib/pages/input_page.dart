@@ -1,9 +1,11 @@
 // lib/pages/input_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_app/pages/result_page.dart';
+import 'package:water_quality_predictor/pages/result_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/prediction_response.dart';
+import '../widgets/custom_text_field.dart';
+import '../widgets/custom_dropdown.dart';
 
 class InputPage extends StatefulWidget {
   const InputPage({super.key});
@@ -14,13 +16,39 @@ class InputPage extends StatefulWidget {
 
 class _InputPageState extends State<InputPage> {
   final _formKey = GlobalKey<FormState>();
-  final _salinityController = TextEditingController();
-  final _waterTempController = TextEditingController();
-  final _secchiDepthController = TextEditingController();
-  final _airTempController = TextEditingController();
+  final _rainfallController = TextEditingController();
+  final _temperatureController = TextEditingController();
+  final _pesticidesController = TextEditingController();
+  final _fertilizerController = TextEditingController();
+
+  String? _selectedArea;
+  String? _selectedItem;
 
   bool _isLoading = false;
   String? _errorMessage;
+
+  // List of countries (Areas) from the dataset
+  final List<String> _areas = [
+    'Albania', 'Algeria', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan',
+    'Bahamas', 'Bangladesh', 'Belarus', 'Belgium', 'Botswana', 'Brazil', 'Bulgaria', 'Burkina Faso',
+    'Burundi', 'Cameroon', 'Canada', 'Central African Republic', 'Chile', 'Colombia', 'Croatia',
+    'Czech Republic', 'Denmark', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Eritrea',
+    'Estonia', 'Finland', 'France', 'Germany', 'Ghana', 'Greece', 'Guatemala', 'Guinea', 'Guyana',
+    'Haiti', 'Honduras', 'Hungary', 'India', 'Indonesia', 'Iraq', 'Ireland', 'Italy', 'Jamaica',
+    'Japan', 'Kazakhstan', 'Kenya', 'Latvia', 'Lebanon', 'Lesotho', 'Libya', 'Lithuania', 'Madagascar',
+    'Malawi', 'Malaysia', 'Mali', 'Mauritania', 'Mauritius', 'Mexico', 'Montenegro', 'Morocco',
+    'Mozambique', 'Namibia', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Norway',
+    'Pakistan', 'Papua New Guinea', 'Peru', 'Poland', 'Portugal', 'Qatar', 'Romania', 'Rwanda',
+    'Saudi Arabia', 'Senegal', 'Slovenia', 'South Africa', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname',
+    'Sweden', 'Switzerland', 'Tajikistan', 'Thailand', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine',
+    'United Kingdom', 'Uruguay', 'Zambia', 'Zimbabwe'
+  ];
+
+  // List of crops (Items) from the dataset
+  final List<String> _items = [
+    'Cassava', 'Maize', 'Plantains and others', 'Potatoes', 'Rice, paddy',
+    'Sorghum', 'Soybeans', 'Sweet potatoes', 'Wheat', 'Yams'
+  ];
 
   Future<void> _predict() async {
     if (!_formKey.currentState!.validate()) {
@@ -34,23 +62,26 @@ class _InputPageState extends State<InputPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://summative-belf.onrender.com/predict'),
+        Uri.parse('https://your-service-name.onrender.com/predict'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'salinity': double.parse(_salinityController.text),
-          'water_temp': double.parse(_waterTempController.text),
-          'secchi_depth': double.parse(_secchiDepthController.text),
-          'air_temp': double.parse(_airTempController.text),
+          'rainfall': double.parse(_rainfallController.text),
+          'temperature': double.parse(_temperatureController.text),
+          'pesticides': double.parse(_pesticidesController.text),
+          'fertilizer': double.parse(_fertilizerController.text),
         }),
       );
 
       if (response.statusCode == 200) {
-        final prediction =
-            PredictionResponse.fromJson(jsonDecode(response.body));
+        final prediction = PredictionResponse.fromJson(jsonDecode(response.body));
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ResultPage(prediction: prediction),
+            builder: (context) => ResultPage(
+              prediction: prediction,
+              area: _selectedArea!,
+              item: _selectedItem!,
+            ),
           ),
         );
       } else {
@@ -71,10 +102,10 @@ class _InputPageState extends State<InputPage> {
 
   @override
   void dispose() {
-    _salinityController.dispose();
-    _waterTempController.dispose();
-    _secchiDepthController.dispose();
-    _airTempController.dispose();
+    _rainfallController.dispose();
+    _temperatureController.dispose();
+    _pesticidesController.dispose();
+    _fertilizerController.dispose();
     super.dispose();
   }
 
@@ -82,133 +113,155 @@ class _InputPageState extends State<InputPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Water Quality Predictor'),
-        backgroundColor: Colors.blueAccent,
+        title: const Text('Crop Yield Predictor'),
+        backgroundColor: Colors.green[700],
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Enter Water Quality Parameters',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                _buildTextField(
-                  controller: _salinityController,
-                  label: 'Salinity (ppt)',
-                  hint: 'Enter salinity (0-10)',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter salinity';
-                    }
-                    final numValue = double.tryParse(value);
-                    if (numValue == null || numValue < 0 || numValue > 10) {
-                      return 'Salinity must be between 0 and 10';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _waterTempController,
-                  label: 'Water Temperature (°C)',
-                  hint: 'Enter water temperature (0-40)',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter water temperature';
-                    }
-                    final numValue = double.tryParse(value);
-                    if (numValue == null || numValue < 0 || numValue > 40) {
-                      return 'Water temperature must be between 0 and 40';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _secchiDepthController,
-                  label: 'Secchi Depth (m)',
-                  hint: 'Enter Secchi depth (0-5)',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter Secchi depth';
-                    }
-                    final numValue = double.tryParse(value);
-                    if (numValue == null || numValue < 0 || numValue > 5) {
-                      return 'Secchi depth must be between 0 and 5';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _airTempController,
-                  label: 'Air Temperature (°C)',
-                  hint: 'Enter air temperature (-20 to 50)',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter air temperature';
-                    }
-                    final numValue = double.tryParse(value);
-                    if (numValue == null || numValue < -20 || numValue > 50) {
-                      return 'Air temperature must be between -20 and 50';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16.0),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontSize: 16),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.green[100]!, Colors.white],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Enter Crop and Environmental Details',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
                     ),
                   ),
-                Center(
-                  child: _isLoading
-                      ? const CircularProgressIndicator()
-                      : ElevatedButton(
-                          onPressed: _predict,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 40, vertical: 15),
-                            backgroundColor: Colors.blueAccent,
-                            textStyle: const TextStyle(fontSize: 18),
+                  const SizedBox(height: 20),
+                  CustomDropdown(
+                    value: _selectedArea,
+                    label: 'Country',
+                    items: _areas,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedArea = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomDropdown(
+                    value: _selectedItem,
+                    label: 'Crop Type',
+                    items: _items,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedItem = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _rainfallController,
+                    label: 'Rainfall (mm/year)',
+                    hint: 'Enter rainfall (0-5000)',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter rainfall';
+                      }
+                      final numValue = double.tryParse(value);
+                      if (numValue == null || numValue < 0 || numValue > 5000) {
+                        return 'Rainfall must be between 0 and 5000';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _temperatureController,
+                    label: 'Temperature (°C)',
+                    hint: 'Enter temperature (-10 to 50)',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter temperature';
+                      }
+                      final numValue = double.tryParse(value);
+                      if (numValue == null || numValue < -10 || numValue > 50) {
+                        return 'Temperature must be between -10 and 50';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _pesticidesController,
+                    label: 'Pesticides (tonnes)',
+                    hint: 'Enter pesticides (0-200,000)',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter pesticides';
+                      }
+                      final numValue = double.tryParse(value);
+                      if (numValue == null || numValue < 0 || numValue > 200000) {
+                        return 'Pesticides must be between 0 and 200,000';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: _fertilizerController,
+                    label: 'Fertilizer (kg/ha)',
+                    hint: 'Enter fertilizer (0-1000)',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter fertilizer';
+                      }
+                      final numValue = double.tryParse(value);
+                      if (numValue == null || numValue < 0 || numValue > 1000) {
+                        return 'Fertilizer must be between 0 and 1000';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  Center(
+                    child: _isLoading
+                        ? const CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                          )
+                        : ElevatedButton(
+                            onPressed: _predict,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                              backgroundColor: Colors.green[700],
+                              foregroundColor: Colors.white,
+                              textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text('Predict'),
                           ),
-                          child: const Text('Predict'),
-                        ),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required String? Function(String?) validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        border: const OutlineInputBorder(),
-        filled: true,
-        fillColor: Colors.grey[100],
-      ),
-      validator: validator,
     );
   }
 }
