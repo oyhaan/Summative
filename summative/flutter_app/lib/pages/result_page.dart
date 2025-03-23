@@ -6,12 +6,14 @@ class ResultPage extends StatelessWidget {
   final PredictionResponse prediction;
   final String area;
   final String item;
+  final int year;
 
   const ResultPage({
     super.key,
     required this.prediction,
     required this.area,
     required this.item,
+    required this.year,
   });
 
   @override
@@ -19,7 +21,7 @@ class ResultPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Prediction Result'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.blue[700],
         elevation: 0,
       ),
       body: Container(
@@ -27,7 +29,7 @@ class ResultPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.green[100]!, Colors.white],
+            colors: [Colors.blue[50]!, Colors.white],
           ),
         ),
         child: Center(
@@ -41,7 +43,7 @@ class ResultPage extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.green,
+                    color: Colors.blue,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -63,13 +65,18 @@ class ResultPage extends StatelessWidget {
                           'Crop: $item',
                           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                         ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Year: $year',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                        ),
                         const SizedBox(height: 20),
                         Text(
                           'Predicted Yield: ${prediction.predictedYield.toStringAsFixed(2)} ${prediction.unit}',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: Colors.blue,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -84,7 +91,7 @@ class ResultPage extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    backgroundColor: Colors.green[700],
+                    backgroundColor: Colors.blue[700],
                     foregroundColor: Colors.white,
                     textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     shape: RoundedRectangleBorder(

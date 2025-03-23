@@ -17,9 +17,9 @@ class InputPage extends StatefulWidget {
 class _InputPageState extends State<InputPage> {
   final _formKey = GlobalKey<FormState>();
   final _rainfallController = TextEditingController();
-  final _temperatureController = TextEditingController();
   final _pesticidesController = TextEditingController();
-  final _fertilizerController = TextEditingController();
+  final _temperatureController = TextEditingController();
+  final _yearController = TextEditingController();
 
   String? _selectedArea;
   String? _selectedItem;
@@ -66,9 +66,11 @@ class _InputPageState extends State<InputPage> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'rainfall': double.parse(_rainfallController.text),
-          'temperature': double.parse(_temperatureController.text),
           'pesticides': double.parse(_pesticidesController.text),
-          'fertilizer': double.parse(_fertilizerController.text),
+          'temperature': double.parse(_temperatureController.text),
+          'item': _selectedItem,
+          'area': _selectedArea,
+          'year': int.parse(_yearController.text),
         }),
       );
 
@@ -81,6 +83,7 @@ class _InputPageState extends State<InputPage> {
               prediction: prediction,
               area: _selectedArea!,
               item: _selectedItem!,
+              year: int.parse(_yearController.text),
             ),
           ),
         );
@@ -103,9 +106,9 @@ class _InputPageState extends State<InputPage> {
   @override
   void dispose() {
     _rainfallController.dispose();
-    _temperatureController.dispose();
     _pesticidesController.dispose();
-    _fertilizerController.dispose();
+    _temperatureController.dispose();
+    _yearController.dispose();
     super.dispose();
   }
 
@@ -114,7 +117,7 @@ class _InputPageState extends State<InputPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Crop Yield Predictor'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: Colors.blue[700],
         elevation: 0,
       ),
       body: Container(
@@ -122,7 +125,7 @@ class _InputPageState extends State<InputPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.green[100]!, Colors.white],
+            colors: [Colors.blue[50]!, Colors.white],
           ),
         ),
         child: Padding(
@@ -138,7 +141,7 @@ class _InputPageState extends State<InputPage> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                      color: Colors.blue,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -213,16 +216,16 @@ class _InputPageState extends State<InputPage> {
                   ),
                   const SizedBox(height: 16),
                   CustomTextField(
-                    controller: _fertilizerController,
-                    label: 'Fertilizer (kg/ha)',
-                    hint: 'Enter fertilizer (0-1000)',
+                    controller: _yearController,
+                    label: 'Year',
+                    hint: 'Enter year (1900-2025)',
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter fertilizer';
+                        return 'Please enter year';
                       }
-                      final numValue = double.tryParse(value);
-                      if (numValue == null || numValue < 0 || numValue > 1000) {
-                        return 'Fertilizer must be between 0 and 1000';
+                      final numValue = int.tryParse(value);
+                      if (numValue == null || numValue < 1900 || numValue > 2025) {
+                        return 'Year must be between 1900 and 2025';
                       }
                       return null;
                     },
@@ -240,13 +243,13 @@ class _InputPageState extends State<InputPage> {
                   Center(
                     child: _isLoading
                         ? const CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
                           )
                         : ElevatedButton(
                             onPressed: _predict,
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                              backgroundColor: Colors.green[700],
+                              backgroundColor: Colors.blue[700],
                               foregroundColor: Colors.white,
                               textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               shape: RoundedRectangleBorder(
