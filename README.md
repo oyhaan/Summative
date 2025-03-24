@@ -9,6 +9,8 @@ This project aims to support precision agriculture by forecasting crop yields, e
 - Select crops with the best yield potential for their area
 - Boost profits through informed, data-backed choices
 
+Youtube Link: https://youtu.be/RyvG7LIUpq0
+
 ## Data Overview
 
 **Origin**: Crop Yield Prediction Dataset, sourced from Kaggle  
@@ -69,10 +71,6 @@ To use the Flutter app, ensure you have the **Flutter SDK** installed from [flut
 2. **Install Dependencies**: `flutter pub get `
 3. **Set the API URL**: Open `lib/pages/input_page.dart`, find the API endpoint variable (e.g., `final String apiUrl = 'https://summative-belf.onrender.com/predict';`), and confirm it matches `https://summative-belf.onrender.com/predict`.
 4. **Launch the App**: `flutter run`. To use the app: on the input screen, input values for rainfall, pesticides, temperature, year, and choose the crop type and country from dropdowns, tap the "Predict" button to send the data to the API, and check the predicted yield or any errors on the results screen.
-
-## Demonstration Video
-
-View the 2-minute demo video [here](https://www.youtube.com/your-video-link). It features: the Flutter app performing predictions with example inputs and the `/predict` endpoint being tested through Swagger UI.
 
 ## Notes and Customization
 
