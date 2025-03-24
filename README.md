@@ -34,12 +34,18 @@ The dataset includes 28,242 records and 7 columns, capturing agricultural and en
 
 ## API Access
 
-**Prediction Endpoint (POST)**: https://crop-yield-predictor-rb5g.onrender.com/predict/  
-**Swagger Interface**: https://crop-yield-predictor-rb5g.onrender.com/docs/
+**Prediction Endpoint (POST)**: https://summative-belf.onrender.com/predict
+**Swagger Interface**: https://summative-belf.onrender.com/docs
 
 ## Project Details
 
-The project centers on predicting crop yields using a random forest model, hosted through a FastAPI endpoint, and connected to a Flutter mobile app. It meets the summative assignment criteria by focusing on a specific use case (crop yield prediction), steering clear of overused examples like house price prediction, and demonstrating model comparison, API creation, and mobile app development. Using scikit-learn, a random forest model was trained to predict yields based on variables like rainfall, pesticide use, temperature, crop type, region, and year. The model’s performance was evaluated against linear regression and decision trees using mean squared error as the metric. Loss curves for both training and test data were visualized, and the top-performing model (random forest) was saved for API deployment. A FastAPI endpoint was developed to deliver predictions, accepting POST requests with strict data types and value ranges (enforced via Pydantic’s BaseModel), and is hosted on Render for free. The Swagger UI allows for easy endpoint testing. A Flutter app was created to work with the API, featuring an input screen with fields for all necessary variables, a "Predict" button, and a results screen showing the predicted yield or error messages. The app is well-structured, intuitive, and visually clean. A 2-minute video showcases the Flutter app in action, making predictions, and the API being tested via Swagger UI, adhering to the assignment’s time constraints and focusing on functionality.
+The project centers on predicting crop yields using a random forest model, hosted through a FastAPI endpoint, and connected to a Flutter mobile app. It meets the summative assignment criteria by focusing on a specific use case (crop yield prediction).
+
+Using scikit-learn, a random forest model was trained to predict yields based on variables like rainfall, pesticide use, temperature, crop type, region, and year. The model’s performance was evaluated against linear regression and decision trees using mean squared error as the metric.
+
+Loss curves for both training and test data were visualized, and the top-performing model (random forest) was saved for API deployment. A FastAPI endpoint was developed to deliver predictions, accepting POST requests with strict data types and value ranges (enforced via Pydantic’s BaseModel), and is hosted on Render for free.
+
+The Swagger UI allows for easy endpoint testing. A Flutter app was created to work with the API, featuring an input screen with fields for all necessary variables, a "Predict" button, and a results screen showing the predicted yield or error messages. The app is well-structured, intuitive, and visually clean.
 
 ## API Endpoint Information
 
@@ -59,10 +65,10 @@ The endpoint uses:
 
 To use the Flutter app, ensure you have the **Flutter SDK** installed from [flutter.dev](https://flutter.dev/docs/get-started/install) and an emulator or device ready (Android/iOS emulator or physical device). Follow these steps:
 
-1. **Clone the Repository**: `bash git clone https://github.com/your-username/your-repo-name.git cd your-repo-name `
-2. **Install Dependencies**: `bash flutter pub get `
-3. **Set the API URL**: Open `lib/pages/input_page.dart`, find the API endpoint variable (e.g., `final String apiUrl = 'https://crop-yield-predictor-rb5g.onrender.com/predict';`), and confirm it matches `https://crop-yield-predictor-rb5g.onrender.com/predict`.
-4. **Launch the App**: `bash flutter run `. To use the app: on the input screen, input values for rainfall, pesticides, temperature, year, and choose the crop type and country from dropdowns, tap the "Predict" button to send the data to the API, and check the predicted yield or any errors on the results screen.
+1. **Clone the Repository**: `git clone https://github.com/oyhaan/linear_regression_model.git` and then `cd linear_regression_model/summative/flutter_app`
+2. **Install Dependencies**: `flutter pub get `
+3. **Set the API URL**: Open `lib/pages/input_page.dart`, find the API endpoint variable (e.g., `final String apiUrl = 'https://summative-belf.onrender.com/predict';`), and confirm it matches `https://summative-belf.onrender.com/predict`.
+4. **Launch the App**: `flutter run`. To use the app: on the input screen, input values for rainfall, pesticides, temperature, year, and choose the crop type and country from dropdowns, tap the "Predict" button to send the data to the API, and check the predicted yield or any errors on the results screen.
 
 ## Demonstration Video
 
